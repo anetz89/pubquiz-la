@@ -84,9 +84,9 @@ function createRound(index) {
   return {
   	index: index,
     status: 'OPEN',
-    // answers: [{value: ''},{value: ''},{value: ''},{value: ''},{value: ''},
-    //   {value: ''},{value: ''},{value: ''},{value: ''},{value: ''}]
-    answers: [{value: ''},{value: ''}]
+    answers: [{value: ''},{value: ''},{value: ''},{value: ''},{value: ''},
+       {value: ''},{value: ''},{value: ''},{value: ''},{value: ''}]
+    // answers: [{value: ''},{value: ''}]
   };
 }
 
@@ -240,10 +240,14 @@ module.exports = {
     team.currentRound.points = round.points;
     team.currentRound.status = 'FINISHED';
     team.rounds.push(team.currentRound);
+    team.points = getTeamPoints(team);
+
+    if(team.rounds.length >= 6) {
+      return 'OK';
+    }
+    // create new round
     team.currentRound = createRound(team.rounds.length);
     team.currentRoundIndex = team.rounds.length;
-
-    team.points = getTeamPoints(team);
 
     return 'OK';
   },
