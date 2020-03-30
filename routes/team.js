@@ -45,7 +45,8 @@ router.post('/:id/validatePassword/', function(req, res, next) {
 router.post('/:id/setRoundPoints/:index', function(req, res, next) {
   res.send(storage.setRoundPoints({id: req.params.id }, {
     index: parseInt(req.params.index),
-    points: req.body.points
+    points: parseInt(req.body.points),
+    answers: req.body.answers || []
   }));
 });
 

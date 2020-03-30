@@ -135,11 +135,16 @@ module.exports = {
   deleteTeam: function(team) {
     var existence = doesTeamExist(team);
     if (existence.exists) {
-      logger.log('delete team ' + team.id);
-      delete teams[team.id];
-      return 'OK';
+      logger.log('delete team ' + existence.id);
+      delete teams[existence.id];
+      return {
+        status: 'OK'
+      };
     }
-    return 'unknown team';
+    return {
+      status: 'ERROR',
+      msg: 'unknown team'
+    };
   },
   updateRoundAnswer: function(team, answer) {
     var existence = doesTeamExist(team);
@@ -148,7 +153,7 @@ module.exports = {
       return 'invalid team id';
     }
 
-    var team = teams[team.id];
+    var team = teams[existence.id];
     if (!team.currentRound) {
       return 'invalid round';
     }
@@ -176,7 +181,7 @@ module.exports = {
       };
     }
 
-    var team = teams[team.id];
+    var team = teams[existence.id];
     if (!team.currentRound) {
       return {
         status: 'ERROR',
@@ -210,19 +215,20 @@ module.exports = {
       logger.log('invalid team id to submit round ' + team.id);
       return 'invalid team id';
     }
-    var team = teams[team.id];
+    var team = teams[existence.id];
 
     if (team.currentRoundIndex !== round.index) {
-      logger.log('invalid round index (' + round.index + ') for team ' + team.id + ', expected ' + team.currentRoundIndex);
+      logger.log('invalid round index (' + round.index + ') for team ' + existence.id + ', expected ' + team.currentRoundIndex);
       return 'invalid round index';
     }
     team.currentRound.status = 'SUBMITTED';
+    team.currentRound.submissionTime = new Date();
 
     return team.currentRound;
   },
   setRoundPoints: function(team, round) {
     if (!round.points && round.points !== 0) {
-      logger.log('no round points for team ' + team.id);
+      logger.log('no round points (' + round.points + ') for team ' + team.id);
       return 'no round points';
     }
     var existence = doesTeamExist(team);
@@ -230,13 +236,15 @@ module.exports = {
       logger.log('invalid team id to set round points ' + team.id);
       return 'invalid team id';
     }
-    var team = teams[team.id];
+    var team = teams[existence.id];
 
     if (team.currentRoundIndex !== round.index) {
-      logger.log('invalid round index (' + round.index + ') for team ' + team.id);
+      logger.log('invalid round index (' + round.index + ') for team ' + existence.id);
       return 'invalid round index';
     }
-
+    team.currentRound.answers.forEach((answer, index) => {
+      answer.correct = (round.answers.length >= index)? round.answers[index].correct || false: false;
+    });
     team.currentRound.points = round.points;
     team.currentRound.status = 'FINISHED';
     team.rounds.push(team.currentRound);
@@ -252,7 +260,6 @@ module.exports = {
     return 'OK';
   },
   validatePassword: function(team, password) {
-    logger.log(team);
     if (!password) {
       logger.log('no password value to test');
       return false;
