@@ -56,12 +56,13 @@ function getClearTeam(team, isDetail, isInternal) {
     id: team.id,
     name: team.name,
     points: team.points || 0,
-    currentRoundIndex: team.rounds? team.rounds.length - 1 : 0
+    currentRoundIndex: team.rounds? team.rounds.length : 0
   };
   if (isDetail) {
     result.rounds = team.rounds;
     if (isInternal) {
       result.currentRound = team.currentRound;
+      result.privateId = team.privateId;
     }
   }
   return result;
@@ -102,13 +103,19 @@ module.exports = {
     }
     var result = [];
     Object.keys(teams).forEach(function (key) {
-      console.log(teams[key]);
       if (!teams[key].isPublic) {
         return;
       }
       result.push(getClearTeam(teams[key]));
     });
     return result;
+  },
+  getCurrentRound: function(id) {
+    var existence = doesTeamExist({id: id});
+    if (!existence.exists || existence.method !== 'privateId') {
+      return 'invalid id';
+    }
+    return teams[existence.id].currentRound;
   },
   push: function(team) {
     var existence = doesTeamExist(team);
@@ -206,8 +213,40 @@ module.exports = {
     roundAnswer.blocked = uuidv4();
     return {
       status: 'OK',
-      blockedId: roundAnswer.blocked
+      blockedId: roundAnswer.blocked,
+      round: team.currentRound
     };
+  },
+  unblockRoundAnswer: function(team, answer) {
+    var existence = doesTeamExist(team);
+    if (!existence.exists) {
+      logger.log('invalid team id to update round ' + team.id);
+      return {
+        status: 'ERROR',
+        msg: 'invalid team id'
+      };
+    }
+
+    var team = teams[existence.id];
+    if (!team.currentRound) {
+      return {
+        status: 'ERROR',
+        msg: 'invalid round'
+      };
+    }
+
+    if (team.currentRound.index !== answer.roundId) {
+      return {
+        status: 'ERROR',
+        msg: 'invalid round, got ' + answer.roundId + ', expected ' + team.currentRound.index
+      };
+    }
+
+    var roundAnswer = team.currentRound.answers[answer.answerId];
+
+    roundAnswer.blocked = null;
+
+    return team.currentRound;
   },
   submitRound: function(team, round) {
     var existence = doesTeamExist(team);

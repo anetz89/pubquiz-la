@@ -12,6 +12,10 @@ router.get('/:id', function(req, res, next) {
   res.send(storage.get(req.params.id));
 });
 
+router.get('/:id/getCurrentRound', function(req, res, next) {
+  res.send(storage.getCurrentRound(req.params.id));
+});
+
 router.post('/', function(req, res, next) {
   res.send(storage.push(req.body));
 });
@@ -27,6 +31,13 @@ router.post('/:id/round/:roundid/updateAnswer/:answerid/:releaseKey', function(r
 
 router.post('/:id/round/:roundid/blockAnswer/:answerid', function(req, res, next) {
   res.send(storage.blockRoundAnswer({id: req.params.id }, {
+    roundId: parseInt(req.params.roundid),
+    answerId: parseInt(req.params.answerid)
+  }));
+});
+
+router.post('/:id/round/:roundid/unblockAnswer/:answerid', function(req, res, next) {
+  res.send(storage.unblockRoundAnswer({id: req.params.id }, {
     roundId: parseInt(req.params.roundid),
     answerId: parseInt(req.params.answerid)
   }));
