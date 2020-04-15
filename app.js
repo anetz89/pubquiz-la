@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var logRouter = require('./routes/log');
+var contactRouter = require('./routes/contact');
 var teamRouter = require('./routes/team');
 
 var app = express();
@@ -20,6 +21,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/log', logRouter);
+app.use('/contactMessage', contactRouter);
 app.use('/team', teamRouter);
 
 app.get("*", function(req, res) {

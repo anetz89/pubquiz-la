@@ -1,4 +1,5 @@
 var logs = [];
+var contactMessages = [];
 
 module.exports = {
   log: function(message) {
@@ -10,5 +11,12 @@ module.exports = {
   },
   get: function() {
     return logs;
+  },
+  getContactMessages: function() {
+    return contactMessages;
+  },
+  setContactMessage: function(message) {
+    contactMessages.push(message);
+    return 'OK';
   }
 };

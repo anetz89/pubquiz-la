@@ -85,6 +85,7 @@ function createRound(index) {
   return {
   	index: index,
     status: 'OPEN',
+    startTime: new Date(),
     answers: [{value: ''},{value: ''},{value: ''},{value: ''},{value: ''},
        {value: ''},{value: ''},{value: ''},{value: ''},{value: ''}]
     // answers: [{value: ''},{value: ''}]
@@ -211,6 +212,13 @@ module.exports = {
       };
     }
     roundAnswer.blocked = uuidv4();
+    // reset blocked after 10 seconds
+    setTimeout(function(answer) {
+      return function() {
+        roundAnswer.blocked = null;
+      }
+    }(roundAnswer), 9500);
+
     return {
       status: 'OK',
       blockedId: roundAnswer.blocked,
@@ -290,6 +298,8 @@ module.exports = {
     team.points = getTeamPoints(team);
 
     if(team.rounds.length >= 6) {
+      team.currentRound = null;
+      team.currentRoundIndex = null;
       return 'OK';
     }
     // create new round
